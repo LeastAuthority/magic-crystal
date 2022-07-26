@@ -1,35 +1,58 @@
 Magic Crystal
 =============
 
-_SB: Is this doc supposed to be a how-to guide for a (tech-savvy) user, or more a specification for a programmer to build an app?_
 
-This document provides a protocol and examples for using [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) as a transport mechanism for [secret sharing](https://darkcrystal.pw/what-is-secret-sharing/) with [Dark Crystal](https://darkcrystal.pw/) and the Public Key Infrastructure (PKI) of your choice.
+<!--Not really a specification, can give recommendations, but not capitalized specification-y things, more prose style. Primary objective: someone building an app with these.-->
+
+This document provides a specification and recommendations for building an application for [secret sharing](https://darkcrystal.pw/what-is-secret-sharing/) with [Dark Crystal](https://darkcrystal.pw/), using [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) as a transport mechanism, and the Public Key Infrastructure (PKI) of your choice.
+
+_SB: If the Protocol Overview and the Example sections will be merged, we should change the above to OpenPGP specifically._
 
 _SB: Add TOC when doc is ready_
 
-Introduction
--------------
+Background
+----------
 
-[Dark Crystal](https://darkcrystal.pw/) facilitates storing secrets (i.e., sensitive data such as access credentials or cryptographic keys) between trusted peers, rather than relying on individual responsibility or 3rd party providers. Dark Crystal is *transport agnostic*, meaning that in can be used in combination with any transfer/communication mechanisms. 
+[Dark Crystal](https://darkcrystal.pw/) facilitates storing **secrets** (i.e., sensitive data such as access credentials or cryptographic keys) between trusted peers, rather than relying on individual responsibility or third party providers. Dark Crystal is **transport agnostic**, meaning that in can be used in combination with any transfer/communication mechanisms. 
 
 The transfer mechanism used in this document is [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html), a tool for transporting arbitrary-sized files or directories between two computers. Magic Wormhole relies on the assumption that the two humans in charge of the two computers can communicate with each other either in person, on the phone, or via some messaging service.
 
 In addition, some PKI (Public Key Infrastructure) is needed to carry out the protocol described here, and all recipients and sender already need to have public keys for each other. We use [OpenPGP](https://www.openpgp.org/) as an example in this document.
 
+### Why Dark Crystal?
 
-Prerequisites
--------------
+
+Encrypting files and messages provides a high level of protection from data being compromised. However, many people forgo using encryption because they are worried that losing their encryption keys will result in them losing access to their data. 
+
+Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into **shards**, and then distribute these shards to a set of their trusted peers, called **custodians**. It is not possible to reconstruct the original secret from a single shard, so the secret remains protected if a shard is compromised. On the other hand, a subset of shards is enough to recover the original secret, so access to the secret is preserved even if a shard is lost.
+
+See the Dark Crystal documentation for more details about [the challenges of adopting encryption methods](https://darkcrystal.pw/why-dark-crystal/) and [potential use cases](https://darkcrystal.pw/use-cases/) for secret sharing with Dark Crystal.
+
+
+### Why Magic Wormhole?
+
+
+Dark Crystal does not specify a transport mechanism for distributing the shards between custodians. This means that custodians either need to sign up for a specific service (like [Secure Scuttlebutt](https://scuttlebot.io/more/protocols/secure-scuttlebutt.html)) for securely distributing the shards, or resort to less secure methods such as email or instant messaging. The latter channels also have the disadvantage that the data is stored on the service provider's servers, increasing the risk of being compromised.
+
+Magic Wormhole provides secure file transfer **directly between two computers**, without storing the secret on third-party servers. Integrating Magic Wormhole into an application using Dark Crystal provides a secure transport mechanism without the need for the custodians to sign up for a secure transport service or using less secure channels. While Magic Wormhole still relies on an external communication channel (e.g. email, instant messaging or voice) to relay the wormhole code, both the likelihood and the negative consequences of this code being compromised are minimal compared to the secret itself being shared on one of these channels.
+
+A further advantage of Magic Wormhole is that it is **identity-less**, meaning that the participants do not need to supply personal information or obtain access credentials to complete the transfer. It is important to note that, while the file transfer itself does not rely on identities, the secret sharing process itself is not entirely identity-less. The basic premise of Dark Crystal is that the secret owner trusts their custodians, which presumably implies that they know at least some aspects of their identity. In addition, using a PKI also means that public/private keys are assigned to (partially) identified individuals. The advantage of using Magic Wormhole is that they do not need to disclose this to any other parties.
+
+
+Application Specifications
+--------------------------
+
+### Prerequisites
 
 
 * some secret data to socially back up;
-* an Ed25519 public key for each intended recipient;
-* an Ed25519 private/public key for the sender.
+* an Ed25519 public key for each intended recipient (custodian);
+* an Ed25519 private/public key for the sender (secret owner).
 
 _SB: is Ed25519 a requirement, or would other PKIs work as well?_
 
 
-Protocol Overview
------------------
+### Protocol Overview
 
 _SB: The **Protocol Overview** and the **Example** sections are very similar right now. Are we going to add more concrete details to the **Example** section later? If not, I would merge these two section into one, because it feel very repetitive as it is now._
 
@@ -69,8 +92,7 @@ Note that the sender has confirmation that the Shard is written to the recipient
 Simiarly, the recipient receives confirmation that the sender has deleted their copy (by waiting for the wormhole to close).
 
 
-Example: OpenPGP
-----------------
+### Example: OpenPGP
 
 Many people already know an OpenPGP key for (some of) their colleagues.
 
