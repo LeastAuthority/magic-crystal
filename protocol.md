@@ -24,7 +24,7 @@ In addition, some PKI (Public Key Infrastructure) is needed to carry out the pro
 
 Encrypting files and messages provides a high level of protection from data being compromised. However, many people forgo using encryption because they are worried that losing their encryption keys will result in them losing access to their data. 
 
-Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into **shards**, and then distribute these shards to a set of their trusted peers, called **custodians**. It is not possible to reconstruct the original secret from a single shard, so the secret remains protected if a shard is compromised. On the other hand, a subset of shards is enough to recover the original secret, so access to the secret is preserved even if a shard is lost.
+Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into **shards**, and then distribute these shards to a set of their trusted peers, called **custodians**. It is not possible to reconstruct the original secret from a single shard, so the secret remains protected if a shard is compromised. On the other hand, a subset of shards is enough to recover the original secret, so the owner's access to the secret is preserved even if a shard is lost.
 
 See the Dark Crystal documentation for more details about [the challenges of adopting encryption methods](https://darkcrystal.pw/why-dark-crystal/) and [potential use cases](https://darkcrystal.pw/use-cases/) for secret sharing with Dark Crystal.
 
@@ -32,7 +32,7 @@ See the Dark Crystal documentation for more details about [the challenges of ado
 ### Why Magic Wormhole?
 
 
-Dark Crystal does not specify a transport mechanism for distributing the shards between custodians. This means that custodians either need to sign up for a specific service (like [Secure Scuttlebutt](https://scuttlebot.io/more/protocols/secure-scuttlebutt.html)) for securely distributing the shards, or resort to less secure methods such as email or instant messaging. The latter channels also have the disadvantage that the data is stored on the service provider's servers, increasing the risk of being compromised.
+Dark Crystal does not specify a transport mechanism for distributing the shards between custodians. This means that custodians either need to sign up for a specific service (like [Secure Scuttlebutt](https://scuttlebot.io/more/protocols/secure-scuttlebutt.html)) for securely distributing the shards, or resort to less secure methods such as email or instant messaging. The latter channels also have the disadvantage that the data is stored on the service provider's servers, increasing the risk of it being compromised.
 
 Magic Wormhole provides secure file transfer **directly between two computers**, without storing the secret on third-party servers. Integrating Magic Wormhole into an application using Dark Crystal provides a secure transport mechanism without the need for the custodians to sign up for a secure transport service or using less secure channels. While Magic Wormhole still relies on an external communication channel (e.g. email, instant messaging or voice) to relay the wormhole code, both the likelihood and the negative consequences of this code being compromised are minimal compared to the secret itself being shared on one of these channels.
 
