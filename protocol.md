@@ -75,6 +75,9 @@ The basic premise of Dark Crystal is that the secret owner trusts their custodia
 In addition, using a PKI also means that public/private keys are assigned to (partially) identified individuals.
 The advantage of using Magic Wormhole is that they do not need to disclose this to any other parties.
 
+> - The biggest pain-point for security with Dark Crystal is when returning shards during recovery, we need to be sure we are sending them to the right person. This might be a situation where the secret owner has lost their computer and has limited ways they can confirm their identity. Magic Wormhole gives us an easy-to-use and secure way to do out-of-band authentication.
+> - Is it worth mentioning the possibility that Magic Wormhole could be used to receive shards in the browser without the 'custodians' needing to install anything? I don't know whether some of the protocol details below would make this difficult / impossible. But this would greatly broaden who i can choose as a trusted contact, and give it an advantage over other platforms / protocols.
+>
 
 Application Specifications
 --------------------------
@@ -133,6 +136,12 @@ This protocol is repeated for each recipient.
 Note that the sender has confirmation that the Shard is written to the recipients disk _before_ they delete the outbox copy.
 Simiarly, the recipient receives confirmation that the sender has deleted their copy (by waiting for the wormhole to close).
 
+> We still need the recovery process. Tricky bits: 
+> - How does the custodian know which shard belongs to which secret owner? Public key?
+> - Is it possible to send multiple shards to the same person?  If so, how do we identify which one we want during recovery? Or do we just give all we have for that secret owner?
+> - Do we also need this challenge-response mechanism during recovery?
+> - Normally i would say here: How can we be sure we are sending the shard to the right person? But i think this is where Magic Wormhole really shines - it gives an easy to use way to do out-of-band authentication.
+
 
 ### Example: OpenPGP
 
@@ -161,6 +170,7 @@ We review each of these steps in detail below.
 
      - Dark Crystal (can we use the public-keys _directly_ in the protocol? or will that leak stuff to passive observres, like **who to rubber-hose for the shards**?)
 
+> If i understand right, we are only transferring the encrypted shares, and its not possible to infer the public keys from them.
 
 2. Put Shards in Outbox
 
