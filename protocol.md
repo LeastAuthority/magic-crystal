@@ -4,61 +4,39 @@ Magic Crystal
 
 <!--Not really a specification, can give recommendations, but not capitalized specification-y things, more prose style. Primary objective: someone building an app with these.-->
 
-authors: meejah (least authority), sylvia balho (least authority)
-contributors/reviewers: Chris Wood (least authority), Peg (Dark Crystal) [Mu (Dark Crystal)?]
+| Author:       | meejah (Least authority)
+|:----------    |:-------------|
+| Editor:       | Sylvia Blaho (Least Authority)
+| Contributors/ | Chris Wood (Least Authority)|
+| Reviewers:    | Peg (Dark Crystal)|
+|               | [Mu (Dark Crystal)] |
 
 
-XXX meejah: I capitalized some terms as a way to emphasize them as jargon (Shard, Custodian) but maybe that could be done a different way.
 
-XXX meejah: I'm trying to use "semantic newlines", which means a newline only after every sentence (sometimes sooner) instad of e.g. "flowing" paragraphs.
+<!--XXX meejah: I capitalized some terms as a way to emphasize them as jargon (Shard, Custodian) but maybe that could be done a different way.-->
+
+<!--XXX meejah: I'm trying to use "semantic newlines", which means a newline only after every sentence (sometimes sooner) instead of e.g. "flowing" paragraphs.
 Part of the reasoning here is diffs, I think? (If you don't like it, reformat ;)
+-->
 
 
-You have some secret data to back up (e.g. recovery information for a cloud service).
-
-Dark Crystal provides a way to "share" the backup amongst some peers in such a way that a subset of them can recover the data ("social secret sharing", see "Why Dark Crystal" below for more).
-
-Dark Crystal asks you to provide a public-key infrastructure (PKI) and transport mechanism between peers.
-
-In this document, we describe how to leverage social secret sharing using [Magic Wormhole]() for identity-less transport.
-We also provide guidance on _not_ using any PKI (that is, identity-less social backup).
-
-
-Motivation
-----------
-
-Many applications may have some important data that is vital for a user to keep safe.
-This could be private keys, cloud access credentials or so forth.
-
-Often users are asked to "keep this data secure and safe" as it is **required** to recover access.
-By leveraging trusted peers (called "Custodians" by the Dark Crystal specification) we can give users the option to use their social connections to provide a redundant backups of such important information.
-
-In this document we imagine and describe a generic stand-alone application that could in principal back up any secret.
-That said, our description should still be useful for application developers wanting to provide a more integrated approach for their application.
-
-Optionally the Custodians can use a browser based client with no installation or configuration beforehand, making it a realistic option for non-technical users and overcoming many of the usability issues with peer-to-peer protocols
-
-The data to be backed-up should be fairly "static" as the backup operation consumes human time, network bandwidth and storage resources.
-
-While in principal any amount of data could be shared in this fashion, we imagine such data is a "reasonably small" amount by modern standards.
-See discussion (XXX).
-
-considerations to put in ^ discussion (elsewhere, probably?):
-- consider a secret of size X.
-- consider N Custodians
-- how much bandwidth do we have? (we will use at least N * X of bandwidth)
-- how much storage do we have? (a Custodian uses X storage, for each backup)
-
+In this document, we describe how to leverage social [secret sharing](https://darkcrystal.pw/what-is-secret-sharing/) with [Dark Crystal](https://darkcrystal.pw/) using [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) for identity-less transport _without_ using any Public Key Infrastructure.
 
 
 _SB: Add TOC when doc is ready_
 
 
-Background
+Motivation
 ----------
 
-[Dark Crystal](https://darkcrystal.pw/) facilitates storing **secrets** (i.e., sensitive data such as access credentials or cryptographic keys) between trusted peers (call Custodians), rather than relying on individual responsibility or third party providers.
+Many applications have some important data, 
+such as private keys or cloud access credentials, that need to be kept secure and safe: such data should not be accessible to third parties, but it should be accessible to the user when needed, as it is **required** to recover access to the service in question. 
+
+[Dark Crystal](https://darkcrystal.pw/) provides a way to back up such data using social connections: the data is split into several pieces (called "Shards") and distributed among trusted peers (called "Custodians"). 
+
 Dark Crystal is **transport agnostic**, meaning that in can be used in combination with any transfer/communication mechanisms.
+In addition, using Dark Crystal requires a public-key infrastructure (PKI) of the users' choice.
+
 
 The transfer mechanism used in this document is [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html), a tool for connecting two computers on the Internet via human-transribed one-time codes.
 Magic Wormhole relies on the assumption that the two humans in charge of the two computers can communicate with each other either in person, on the phone, or via some messaging service (that is, via some "reasonably secure" channel).
@@ -66,11 +44,13 @@ Magic Wormhole relies on the assumption that the two humans in charge of the two
 We describe a generic application that can backup and restore arbitrary secret data.
 That said, it should have certain charateristics for this to be most useful.
 The data should:
+
 - be "one-time" (or rarely) produced;
 - be "relatively small" (see discusion XXX);
 - be self-contained;
 
 Some examples of this:
+
 - the seed / private key of a cryptocurrency wallet;
 - credentials and access information for a cloud service (e.g. backup);
 - ...
@@ -87,7 +67,7 @@ It also means there's no "passphrase" or so to remember for the user; they reall
 Encrypting files and messages provides a high level of protection from data being compromised.
 However, many people forego using encryption because they are worried that losing their encryption keys will result in them losing access to their data.
 
-Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into **Shards** and then distribute these shards to a set of their trusted peers (called **Custodians**).
+Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into Shards and then distribute these shards to a set of their trusted peers (Custodians).
 It is not possible to reconstruct the original secret from a single Shard, so the secret remains protected if a Shard is compromised.
 On the other hand, a subset of Shards is enough to recover the original secret, so the owner's access to the secret is preserved even if a shard is lost.
 
@@ -101,14 +81,30 @@ This means that custodians either need to sign up for a specific service (like [
 The latter channels also have the disadvantage that the data is stored on the service provider's servers, increasing the risk of it being compromised.
 
 Magic Wormhole provides secure file transfer **directly between two computers**, without storing the secret on third-party servers.
-Integrating Magic Wormhole into an application using Dark Crystal provides a secure transport mechanism without the need for the custodians to sign up for a secure transport service or using less secure channels.
+Integrating Magic Wormhole and Dark Crystal provides a secure transport mechanism without the need for the custodians to sign up for a secure transport service or using less secure channels.
 While Magic Wormhole still relies on an external communication channel (e.g. email, instant messaging or voice) to relay the wormhole code, both the likelihood and the negative consequences of this code being compromised are minimal compared to the secret itself being shared on one of these channels.
 
 A further advantage of Magic Wormhole is that it is **identity-less**, meaning that the participants do not need to supply personal information or obtain access credentials to complete the transfer.
-It is important to note that, while the file transfer itself does not rely on identities, the secret sharing process itself is not entirely identity-less.
-The basic premise of Dark Crystal is that the secret owner trusts their custodians, which presumably implies that they know at least some aspects of their identity.
-In addition, using a PKI also means that public/private keys are assigned to (partially) identified individuals.
-The advantage of using Magic Wormhole is that they do not need to disclose this to any other parties.
+Dark Crystal relies on the Owner and the Custodians using a PKI of their choice, which means that public/private keys are assigned to (partially) identified individuals.
+
+The basic premise of Dark Crystal is that the secret owner trusts their custodians, presumably implying that they know at least some aspects of their identity, so being identifiable by the public/private keys might not be much of a disadvantage.
+That said, one advantage of using Magic Wormhole is that the parties do not need to disclose any identifiable information to any other parties.
+
+Perhaps more importantly, doing away with the need for a PKI could remove adoption barriers for less tech-savvy users, as it simplifies the list of technical requirements for Custodians.
+
+Protocol design
+----------
+
+
+In this document, we imagine and describe a generic stand-alone application that could, in principle, be used to socially back up any secret.
+That said, our description should still be useful for application developers wanting to integrate this feature into their application.
+
+Optionally, the Custodians can use a browser based client with no installation or configuration beforehand, making it a realistic option for non-technical users and overcoming many of the usability issues with peer-to-peer protocols.
+
+The data to be backed up should be fairly "static", as the backup operation consumes human time, network bandwidth and storage resources.
+
+While any amount of data could be shared in this fashion, we imagine such data is a "reasonably small" amount by modern standards.
+(see [Discussion](#discussion)).
 
 
 Application Specifications
@@ -189,9 +185,21 @@ XXX meejah: didn't include identity or challenge/response above ... I _think_ th
 - once we have at least a "threshold" number of Shards, decrypt them
 - the original Application Data is now recovered (and can be passed back, e.g. via file, stdout, ...)
 
+Discussion
+----------
+
+XXX meejah: considerations to put in ^ discussion (elsewhere, probably?):
+
+- consider a secret of size X.
+- consider N Custodians
+- how much bandwidth do we have? (we will use at least N * X of bandwidth)
+- how much storage do we have? (a Custodian uses X storage, for each backup)
 
 
-# XXXX
+
+
+XXXX
+----------
 
 XXX meejah: Leaving some things around for now, in case we decide to go "custom protocol" and have challenge/response
 
