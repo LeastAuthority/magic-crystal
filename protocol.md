@@ -2,8 +2,6 @@ Magic Crystal
 =============
 
 
-<!--Not really a specification, can give recommendations, but not capitalized specification-y things, more prose style. Primary objective: someone building an app with these.-->
-
 | Author:       | meejah (Least authority)
 |:----------    |:-------------|
 | Editor:       | Sylvia Blaho (Least Authority)
@@ -12,15 +10,7 @@ Magic Crystal
 |               | [Mu (Dark Crystal)] |
 
 
-
-<!--XXX meejah: I capitalized some terms as a way to emphasize them as jargon (Shard, Custodian) but maybe that could be done a different way.-->
-
-<!--XXX meejah: I'm trying to use "semantic newlines", which means a newline only after every sentence (sometimes sooner) instead of e.g. "flowing" paragraphs.
-Part of the reasoning here is diffs, I think? (If you don't like it, reformat ;)
--->
-
-
-In this document, we describe how to leverage social [secret sharing](https://darkcrystal.pw/what-is-secret-sharing/) with [Dark Crystal](https://darkcrystal.pw/) using [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) for identity-less transport _without_ using any Public Key Infrastructure.
+In this document, we describe how to leverage [social secret sharing](https://darkcrystal.pw/what-is-secret-sharing/) with [Dark Crystal](https://darkcrystal.pw/) using [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) for identity-less transport _without_ using any Public Key Infrastructure.
 
 
 _SB: Add TOC when doc is ready_
@@ -126,9 +116,16 @@ Application Specifications
 
 ### Protocol Overview
 
-_SB: The **Protocol Overview** and the **Example** sections are very similar right now. Are we going to add more concrete details to the **Example** section later? If not, I would merge these two section into one, because it feel very repetitive as it is now._
+By operating without identities, our protocol needs to only communicate a single chunk of data (the Shard) from the person doing the backup to the Custodian.
+This mirrors the existing Magic Wormhole file-transfer application (which can do a single transfer in one direction).
+One major benefits of re-using this protocol is it becomes hard(er) to distinguish a Magic Wormhole connection that is being used for social secret backup from any other file-transfer.
+Another benefit is existing implementations (in several programming languages).
 
-meejah: probably being more concrete in the example would be good
+The social backup protocol is to produce some number of Shards and then distribute them.
+To recover, the inverse is accomplished: a sufficient number of Shards are collected and used to re-produce the secret.
+
+(Could add discussion of a custom protocol, or adding back in the challenge/response behavior .. but that gets rid of the indistinguishable benefits)
+
 
 #### Producing a Backup
 
@@ -148,23 +145,22 @@ No matter the choice, our application will accept backup data as-is and anyone w
     - each has a 1-byte ID
     - each contains the symmetric-encrypted Application Data
     - each contains a Shamir Secret Sharing portion of the key for the above
-    - if less than 255 Custodians are seleced, we select a random number of these Shards
+    - if less than 256 Custodians are seleced, we select a random number of these Shards
 - each Shard is stored in a file, named like: `.../<purpose>/<petname>.shard`
 - the "petname" is the user-supplied local-only nickname for the intended Custodian
 - the "purpose" is an application-specific string (e.g. "secure-scuttlebutt")
 - for each Custodian who has not yet received their Shard:
     - create a magic-wormhole with them
-        - out-of-band user authentication (e.g. phone-call, Signal thread, ...)
+        - means communicating a short, one-time code to them using an out-of-band (ideally secure) channel
+        - this channel might be a phone-call, in-person meeting, Signal message, etc
+        - for the purposes of the backup protocol, this also serves as out-of-band user authentication: the user should be sure they've communicated the wormhole code to the right human.
     - send the Shard file data, named like `<purpose>.shard`
     - the Custodian saves the file as `.../<petname>/<purpose>.shard` where `<petname>` is their local-only nickname for the sender of the Shard
-    - once the recipient acknowledges receipt -- which they should only do one the file is written -- the sender deletes their corresponding Shard file
+    - once the recipient acknowledges receipt -- which they should only do once the file is written -- the sender deletes their corresponding Shard file
+    - once the Shard file is deleted, the magic-wormhole connection is completed
 
 This protocol is repeated for each recipient.
 Note that the sender has confirmation that the Shard is written to the recipients disk _before_ they delete the outbox copy.
-Simiarly, the recipient receives confirmation that the sender has deleted their copy (by waiting for the wormhole to close).
-
-
-XXX meejah: didn't include identity or challenge/response above ... I _think_ that means we can just use normal file-transfer ... or we could put challenge/response in (but optional?) ... I like the idea of identity-less though
 
 
 #### Recovering Using Existing Backup
@@ -174,26 +170,52 @@ XXX meejah: didn't include identity or challenge/response above ... I _think_ th
 - (list the petnames of all known Custodians?)
 - until we have a "threshold" number of Shards:
     - create a wormhole to a Custodian
-        - out-of-band authentication of the correct human
-    - tell them the "purpose"
-        - this could be a protocol message .. but "file transfer" doesn't have this
-        - it could instead be "out of band" (e.g. human tells other human the purpose)
-        - means: "Custodan end" of the wormhole sends the right file (or terminates)
+        - out-of-band communication of the wormhole code
+        - this same out-of-band communication serves as authentication of the correct human
+    - tell them the "purpose" (via the out-of-band channel)
     - if the Custodian has a local Shard matcing the petname and purpose of this human, send it back (named like `<purpose>.shard`).
     - otherwise, terminate the protocol
     - save the shard as `..../<purpose>/<petname>.shard` where `petname` is the local-only nickname for this human
 - once we have at least a "threshold" number of Shards, decrypt them
 - the original Application Data is now recovered (and can be passed back, e.g. via file, stdout, ...)
 
+XXX: open question: does the Custodian delete the Shard now, or retain it? (Could be UX in-app, and ask the other person?)
+
+
+### "Out of Band" Authentication
+
+We depend above on "out of band" authentication.
+This means, for example, being confident you're speaking over the phone to the right human.
+It could mean re-using an existing secure channel like a Signal chat.
+You may be meeting in-person and speaking to each other in real-time.
+
+In any case, much of the protocol depends on the correct identification of the other human.
+This fills the need that "public key infrastructure" often does.
+
+This opens up a prospective secret-holder to social attacks.
+For instance, if an attacker might successfully impersonates a "threshold" number of friends of a secret-holder then they can recover that secret.
+Similarily, if an attacker can successfully convince enough Custodians that they are the secret-holder then they again may recover the secret.
+
+Users must use caution when sending out Shards: the software must explain the importance of this action and in particular the importance of being sure of the recipient of it.
+That is, when the Magic Wormhole is being set up, users must take the time to correctly identify whom they are giving the code to.
+One code should only be given to one other person.
+Users should also be warned that each re-try is another opportunity for an attacker to guess a code (that is, having to retry many times in a row is unlikely and may indicate an attack).
+
+
 Discussion
 ----------
 
-XXX meejah: considerations to put in ^ discussion (elsewhere, probably?):
+We do not define exactly what a "reasonably sized" secret is.
+Instead, we dicuss some considerations to bear in mind when designing secret data to back up.
+The size of the secret is X bytes; the number of Custodians is N.
 
-- consider a secret of size X.
-- consider N Custodians
+- final secrets include some fixed-sized additional data, but X itself dominates after "hundreds of bytes"
 - how much bandwidth do we have? (we will use at least N * X of bandwidth)
 - how much storage do we have? (a Custodian uses X storage, for each backup)
+- the transfer is "on-line": both parties (the sender and the Custodian) must be online while the transfer completes
+- the Magic Wormhole "mailbox server" may have limits
+  - could use "Transit Relay" / bulk-transfer mode then
+  - above mode should be used for more than "dozens of kilobytes"
 
 
 
