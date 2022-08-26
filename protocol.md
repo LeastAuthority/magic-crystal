@@ -2,63 +2,31 @@ Magic Crystal
 =============
 
 
-<!--Not really a specification, can give recommendations, but not capitalized specification-y things, more prose style. Primary objective: someone building an app with these.-->
-
-authors: meejah (least authority), sylvia balho (least authority)
-contributors/reviewers: Chris Wood (least authority), Peg (Dark Crystal) [Mu (Dark Crystal)?]
-
-
-XXX meejah: I capitalized some terms as a way to emphasize them as jargon (Shard, Custodian) but maybe that could be done a different way.
-
-XXX meejah: I'm trying to use "semantic newlines", which means a newline only after every sentence (sometimes sooner) instad of e.g. "flowing" paragraphs.
-Part of the reasoning here is diffs, I think? (If you don't like it, reformat ;)
+| Author:       | meejah (Least authority)
+|:----------    |:-------------|
+| Editor:       | Sylvia Blaho (Least Authority)
+| Contributors/ | Chris Wood (Least Authority)|
+| Reviewers:    | Peg (Dark Crystal)|
+|               | [Mu (Dark Crystal)] |
 
 
-You have some secret data to back up (e.g. recovery information for a cloud service).
-
-Dark Crystal provides a way to "share" the backup amongst some peers in such a way that a subset of them can recover the data ("social secret sharing", see "Why Dark Crystal" below for more).
-
-Dark Crystal asks you to provide a public-key infrastructure (PKI) and transport mechanism between peers.
-
-In this document, we describe how to leverage social secret sharing using [Magic Wormhole]() for identity-less transport.
-We also provide guidance on _not_ using any PKI (that is, identity-less social backup).
-
-
-Motivation
-----------
-
-Many applications may have some important data that is vital for a user to keep safe.
-This could be private keys, cloud access credentials or so forth.
-
-Often users are asked to "keep this data secure and safe" as it is **required** to recover access.
-By leveraging trusted peers (called "Custodians" by the Dark Crystal specification) we can give users the option to use their social connections to provide a redundant backups of such important information.
-
-In this document we imagine and describe a generic stand-alone application that could in principal back up any secret.
-That said, our description should still be useful for application developers wanting to provide a more integrated approach for their application.
-
-Optionally the Custodians can use a browser based client with no installation or configuration beforehand, making it a realistic option for non-technical users and overcoming many of the usability issues with peer-to-peer protocols
-
-The data to be backed-up should be fairly "static" as the backup operation consumes human time, network bandwidth and storage resources.
-
-While in principal any amount of data could be shared in this fashion, we imagine such data is a "reasonably small" amount by modern standards.
-See discussion (XXX).
-
-considerations to put in ^ discussion (elsewhere, probably?):
-- consider a secret of size X.
-- consider N Custodians
-- how much bandwidth do we have? (we will use at least N * X of bandwidth)
-- how much storage do we have? (a Custodian uses X storage, for each backup)
-
+In this document, we describe how to leverage [social secret sharing](https://darkcrystal.pw/what-is-secret-sharing/) with [Dark Crystal](https://darkcrystal.pw/) using [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) for identity-less transport _without_ using any Public Key Infrastructure.
 
 
 _SB: Add TOC when doc is ready_
 
 
-Background
+Motivation
 ----------
 
-[Dark Crystal](https://darkcrystal.pw/) facilitates storing **secrets** (i.e., sensitive data such as access credentials or cryptographic keys) between trusted peers (call Custodians), rather than relying on individual responsibility or third party providers.
+Many applications have some important data,
+such as private keys or cloud access credentials, that need to be kept secure and safe: such data should not be accessible to third parties, but it should be accessible to the user when needed, as it is **required** to recover access to the service in question.
+
+[Dark Crystal](https://darkcrystal.pw/) provides a way to back up such data using social connections: the data is split into several pieces (called "Shards") and distributed among trusted peers (called "Custodians").
+
 Dark Crystal is **transport agnostic**, meaning that in can be used in combination with any transfer/communication mechanisms.
+In addition, using Dark Crystal requires a public-key infrastructure (PKI) of the users' choice.
+
 
 The transfer mechanism used in this document is [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html), a tool for connecting two computers on the Internet via human-transribed one-time codes.
 Magic Wormhole relies on the assumption that the two humans in charge of the two computers can communicate with each other either in person, on the phone, or via some messaging service (that is, via some "reasonably secure" channel).
@@ -66,17 +34,19 @@ Magic Wormhole relies on the assumption that the two humans in charge of the two
 We describe a generic application that can backup and restore arbitrary secret data.
 That said, it should have certain charateristics for this to be most useful.
 The data should:
+
 - be "one-time" (or rarely) produced;
-- be "relatively small" (see discusion XXX);
+- be "relatively small" (see [Discussion](#discussion));
 - be self-contained;
 
 Some examples of this:
+
 - the seed / private key of a cryptocurrency wallet;
 - credentials and access information for a cloud service (e.g. backup);
 - ...
 
-The main idea is that the user doing the backup has lost acces to their computer (e.g. it fell into the ocean).
-Now, given a new computer and a fresh instance of the application, they can contact some subset of the Custodians keeping Shards and restore access.
+The main idea is that the user doing the backup has lost access to their computer (e.g. it fell into the ocean).
+Now, given a new computer and a fresh instance of the application, they can contact some subset of the Custodians keeping Shards and thereby restore access.
 Note that in the interests of simplicity we choose _not_ to encrypt the secret data, so a sufficiently-large subset of Custodians can conspire to restore access.
 This feature can be useful for example in estate planning.
 It also means there's no "passphrase" or so to remember for the user; they really do _just_ need to re-contact some number of the Custodians.
@@ -87,7 +57,7 @@ It also means there's no "passphrase" or so to remember for the user; they reall
 Encrypting files and messages provides a high level of protection from data being compromised.
 However, many people forego using encryption because they are worried that losing their encryption keys will result in them losing access to their data.
 
-Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into **Shards** and then distribute these shards to a set of their trusted peers (called **Custodians**).
+Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into Shards and then distribute these shards to a set of their trusted peers (Custodians).
 It is not possible to reconstruct the original secret from a single Shard, so the secret remains protected if a Shard is compromised.
 On the other hand, a subset of Shards is enough to recover the original secret, so the owner's access to the secret is preserved even if a shard is lost.
 
@@ -96,43 +66,71 @@ See the Dark Crystal documentation for more details about [the challenges of ado
 
 ### Why Magic Wormhole?
 
-Dark Crystal does not specify a transport mechanism for distributing the shards between custodians.
-This means that custodians either need to sign up for a specific service (like [Secure Scuttlebutt](https://scuttlebot.io/more/protocols/secure-scuttlebutt.html)) for securely distributing the shards, or resort to less secure methods such as email or instant messaging.
+Dark Crystal does not specify a transport mechanism for distributing the shards between Custodians.
+This means that Custodians either need to sign up for a specific service (like [Secure Scuttlebutt](https://scuttlebot.io/more/protocols/secure-scuttlebutt.html)) for securely distributing the shards, or resort to less secure methods such as email or instant messaging.
 The latter channels also have the disadvantage that the data is stored on the service provider's servers, increasing the risk of it being compromised.
 
-Magic Wormhole provides secure file transfer **directly between two computers**, without storing the secret on third-party servers.
-Integrating Magic Wormhole into an application using Dark Crystal provides a secure transport mechanism without the need for the custodians to sign up for a secure transport service or using less secure channels.
+Magic Wormhole provides secure data transfer **directly between two computers**, without storing the secret on third-party servers.
+Integrating Magic Wormhole and Dark Crystal provides a secure transport mechanism without the need for the Custodians to sign up for a secure transport service or use less secure channels.
 While Magic Wormhole still relies on an external communication channel (e.g. email, instant messaging or voice) to relay the wormhole code, both the likelihood and the negative consequences of this code being compromised are minimal compared to the secret itself being shared on one of these channels.
 
 A further advantage of Magic Wormhole is that it is **identity-less**, meaning that the participants do not need to supply personal information or obtain access credentials to complete the transfer.
-It is important to note that, while the file transfer itself does not rely on identities, the secret sharing process itself is not entirely identity-less.
-The basic premise of Dark Crystal is that the secret owner trusts their custodians, which presumably implies that they know at least some aspects of their identity.
-In addition, using a PKI also means that public/private keys are assigned to (partially) identified individuals.
-The advantage of using Magic Wormhole is that they do not need to disclose this to any other parties.
+Dark Crystal relies on the Owner and the Custodians using a PKI of their choice, which means that public/private keys are assigned to (partially) identified individuals.
+
+The basic premise of Dark Crystal is that the secret owner trusts their Custodians, presumably implying that they know at least some aspects of their identity, so being identifiable by the public/private keys might not be much of a disadvantage.
+That said, one advantage of using Magic Wormhole is that the parties do not need to disclose any identifiable information to any other parties.
+
+Perhaps more importantly, doing away with the need for a PKI could remove adoption barriers for less tech-savvy users, as it simplifies the list of technical requirements for Custodians.
+
+
+Protocol design
+----------
+
+In this document, we imagine and describe a generic stand-alone application that could, in principle, be used to socially back up any secret.
+That said, our description should still be useful for application developers wanting to integrate this feature into their application.
+
+Optionally, the Custodians can use a browser based client with no installation or configuration beforehand, making it a realistic option for non-technical users.
+This overcomes many of the usability issues with peer-to-peer protocols.
+
+The data to be backed up should be fairly "static", as the backup operation consumes human time, network bandwidth and storage resources.
+
+While any amount of data could be shared in this fashion, we imagine such data is a "reasonably small" amount by modern standards.
+(see [Discussion](#discussion)).
 
 
 Application Specifications
 --------------------------
 
-### Threat Model notes
+### Dark Crystal Threat Model
 
-- ref'ing Dark Crystal "Threat Model", "Considerations for message transport"
+The Dark Crystal threat model includes some "Considerations for message transport".
 
-- robust encryption
-   - evesdroppers see SecretBox encrypted (over tls, probably) messages
-   - transit relay (if used) sees IP addresses, can know they're communicating
-     (can use Tor to mitigate)
-- indistinguisable
-   - all wormhole connections look _similar_ (two IPs, maybe-relay, SecretBox encryption)
-   - but: fingerprinting; probably can distinguish "file-transfer protocol" from other application-level protocols
-   - meejah: aside: good argument to "just use" the file-transfer protocol?
+Magic Wormhole provides robust encryption via SecretBox with an ephemeral secret key.
+
+Indistinguishability of messages is a little more difficult to reason about.
+By using the existing file-transfer protocol, Magic Wormhole sessions that transmit Shard data will look very similar to sessions that transmit other files.
+It may still be possibly to distinguish based on file-size -- for example, if the secret data has a characteristic size.
+Such a distinguisher will of course still have a margin of guessing: a file or text-message could also be the size of a Shard.
+That said, since each Shard from one backup will be the _same_ size, an attacker may be able to make a more accurate guess when several Shards are sent at nearly the same time -- or from the same IP address (although Tor can be used to hide network location).
+
+As mentioned in the Dark Crystal threat model, a mitigation is to send the Shards at different times.
+This will _always_ be the case in this transport, especially as the owner must establish a different out-of-band channel to each Custodian.
+The software may help here by e.g. enforcing or suggesting a random time to wait before the next Shard is distributed.
+
+The Dark Crystal document also suggests adding some padding.
+We do not specify that currently, although it should be straightforward to add.
 
 
 ### Protocol Overview
 
-_SB: The **Protocol Overview** and the **Example** sections are very similar right now. Are we going to add more concrete details to the **Example** section later? If not, I would merge these two section into one, because it feel very repetitive as it is now._
+By operating without identities, our protocol needs to only communicate a single chunk of data (the Shard) from the person doing the backup to the Custodian.
+This mirrors the existing Magic Wormhole file-transfer application (which can do a single transfer in one direction).
+One major benefits of re-using this protocol is it becomes hard(er) to distinguish a Magic Wormhole connection that is being used for social secret backup from any other file-transfer.
+Another benefit is existing implementations (in several programming languages).
 
-meejah: probably being more concrete in the example would be good
+The social backup protocol is to produce some number of Shards and then distribute them.
+To recover, the inverse is accomplished: a sufficient number of Shards are collected and used to reproduce the secret.
+
 
 #### Producing a Backup
 
@@ -144,7 +142,7 @@ No matter the choice, our application will accept backup data as-is and anyone w
 
 - start a backup session:
     - set "purpose" of the session
-    - (list petnames of Custodians?)
+    - (list petnames of anticipated Custodians?)
 - Application Data is produced and handed to our application as bytes (e.g. in a file, stdin, API, ...)
 - our application produces Shards, using the "random" method, as per the Dark Crystal specification
 - This means:
@@ -152,67 +150,80 @@ No matter the choice, our application will accept backup data as-is and anyone w
     - each has a 1-byte ID
     - each contains the symmetric-encrypted Application Data
     - each contains a Shamir Secret Sharing portion of the key for the above
-    - if less than 255 Custodians are seleced, we select a random number of these Shards
+    - if less than 256 Custodians are seleced, we select a random number of these Shards
 - each Shard is stored in a file, named like: `.../<purpose>/<petname>.shard`
 - the "petname" is the user-supplied local-only nickname for the intended Custodian
 - the "purpose" is an application-specific string (e.g. "secure-scuttlebutt")
+
+- we now enter the "transmit" phase to send Shards to Custodians
 - for each Custodian who has not yet received their Shard:
     - create a magic-wormhole with them
-        - out-of-band user authentication (e.g. phone-call, Signal thread, ...)
+        - means communicating a short, one-time code to them using an out-of-band (ideally secure) channel
+        - this channel might be a phone-call, in-person meeting, Signal message, etc
+        - for the purposes of the backup protocol, this also serves as out-of-band user authentication: the user should be sure they've communicated the wormhole code to the right human.
     - send the Shard file data, named like `<purpose>.shard`
     - the Custodian saves the file as `.../<petname>/<purpose>.shard` where `<petname>` is their local-only nickname for the sender of the Shard
-    - once the recipient acknowledges receipt -- which they should only do one the file is written -- the sender deletes their corresponding Shard file
+    - once the recipient acknowledges receipt -- which they should only do once the file is written -- the sender deletes their corresponding Shard file
+    - once the Shard file is deleted, the magic-wormhole connection is completed
 
-This protocol is repeated for each recipient.
+The "transmit" phase of the protocol is repeated for each recipient.
 Note that the sender has confirmation that the Shard is written to the recipients disk _before_ they delete the outbox copy.
-Simiarly, the recipient receives confirmation that the sender has deleted their copy (by waiting for the wormhole to close).
 
 
-XXX meejah: didn't include identity or challenge/response above ... I _think_ that means we can just use normal file-transfer ... or we could put challenge/response in (but optional?) ... I like the idea of identity-less though
-
-
-#### Recovering Using Existing Backup
+#### Recovering From an Existing Backup
 
 - start a recovery session
 - set the "purpose" for the recovery (arbitrary string)
 - (list the petnames of all known Custodians?)
+
+- enter the "collection" phase
 - until we have a "threshold" number of Shards:
     - create a wormhole to a Custodian
-        - out-of-band authentication of the correct human
-    - tell them the "purpose"
-        - this could be a protocol message .. but "file transfer" doesn't have this
-        - it could instead be "out of band" (e.g. human tells other human the purpose)
-        - means: "Custodan end" of the wormhole sends the right file (or terminates)
+        - out-of-band communication of the wormhole code
+        - this same out-of-band communication serves as authentication of the correct human
+    - tell them the "purpose" (via the out-of-band channel)
     - if the Custodian has a local Shard matcing the petname and purpose of this human, send it back (named like `<purpose>.shard`).
     - otherwise, terminate the protocol
     - save the shard as `..../<purpose>/<petname>.shard` where `petname` is the local-only nickname for this human
-- once we have at least a "threshold" number of Shards, decrypt them
+
+- the "collection" phase of the protocol is repeated with different Custodians until we have a "threshold" number of Shards
+- decrypt the Shards
 - the original Application Data is now recovered (and can be passed back, e.g. via file, stdout, ...)
 
+XXX: open question: does the Custodian delete the Shard now, or retain it? (Could be UX in-app, and ask the other person?)
 
 
-# XXXX
+### "Out of Band" Authentication
 
-XXX meejah: Leaving some things around for now, in case we decide to go "custom protocol" and have challenge/response
+We depend above on "out of band" authentication.
+This means, for example, being confident you're speaking over the phone to the right human.
+It could mean re-using an existing secure channel like a Signal chat.
+You may be meeting in-person and speaking to each other in real-time.
+
+In any case, much of the protocol depends on the correct identification of the other human.
+This fills the need that "public key infrastructure" often does.
+
+This opens up a prospective secret-holder to social attacks.
+For instance, if an attacker might successfully impersonates a "threshold" number of friends of a secret-holder then they can recover that secret.
+Similarily, if an attacker can successfully convince enough Custodians that they are the secret-holder then they again may recover the secret.
+
+Users must use caution when sending out Shards: the software must explain the importance of this action and in particular the importance of being sure of the recipient of it.
+That is, when the Magic Wormhole is being set up, users must take the time to correctly identify whom they are giving the code to.
+One code should only be given to one other person.
+Users should also be warned that each re-try is another opportunity for an attacker to guess a code (that is, having to retry many times in a row is unlikely and may indicate an attack).
 
 
-```python
-class Error:
-    message: str
-```
+Discussion
+----------
 
-```python
-class Challenge:
-    timestamp: int  # seconds since epoch
-    nonce: bytes  # 32 bytes
-```
+We do not define exactly what a "reasonably sized" secret is.
+Instead, we dicuss some considerations to bear in mind when designing secret data to back up.
+The size of the secret is X bytes; the number of Custodians is N.
 
-```python
-class ChallengeResponse:
-    signature: bytes  # Ed25519 signature of [8 bytes timestamp || 32 bytes nonce]
-```
-
-```python
-class Acknowledge:
-    checksum: bytes  # blake2b hash of the Shard
-```
+- final secrets include some fixed-sized additional data, but X itself dominates after "hundreds of bytes"
+- how much bandwidth do we have? (we will use at least N * X of bandwidth)
+- how much storage do we have? (a Custodian uses X storage, for each backup)
+- the transfer is "on-line": both parties (the sender and the Custodian) must be online while the transfer completes
+- the Magic Wormhole "mailbox server" may have limits
+  - could use "Transit Relay" / bulk-transfer mode then
+  - above mode should be used for more than "dozens of kilobytes"
