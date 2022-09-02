@@ -192,6 +192,8 @@ Note that the sender has confirmation that the Shard is written to the recipient
 
 XXX: open question: does the Custodian delete the Shard now, or retain it? (Could be UX in-app, and ask the other person?)
 
+-> (sylvia will) re-word this so that the UX designers get to decide
+
 
 ### "Out of Band" Authentication
 
