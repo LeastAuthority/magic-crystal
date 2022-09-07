@@ -22,7 +22,7 @@ Motivation
 Many applications have some important data,
 such as private keys or cloud access credentials, that need to be kept secure and safe: such data should not be accessible to third parties, but it should be accessible to the user when needed, as it is **required** to recover access to the service in question.
 
-[Dark Crystal](https://darkcrystal.pw/) provides a way to back up such data using social connections: the data is split into several pieces (called "Shards") and distributed among trusted peers (called "Custodians").
+[Dark Crystal](https://darkcrystal.pw/) provides a way to back up such data using social connections: the data is split into several pieces (called "Shards") and distributed among trusted peers (called "Custodians"). This is achieved using a scheme essentially based on [Shamir's Secret Sharing](http://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf).
 
 Dark Crystal is **transport agnostic**, meaning that in can be used in combination with any transfer/communication mechanisms.
 In addition, using Dark Crystal requires a public-key infrastructure (PKI) of the users' choice.
@@ -57,7 +57,7 @@ It also means there's no "passphrase" or so to remember for the user; they reall
 Encrypting files and messages provides a high level of protection from data being compromised.
 However, many people forego using encryption because they are worried that losing their encryption keys will result in them losing access to their data.
 
-Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into Shards and then distribute these shards to a set of their trusted peers (Custodians).
+Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into Shards and then distribute these shards to a set of their trusted peers (Custodians). 
 It is not possible to reconstruct the original secret from a single Shard, so the secret remains protected if a Shard is compromised.
 On the other hand, a subset of Shards is enough to recover the original secret, so the owner's access to the secret is preserved even if a shard is lost.
 
