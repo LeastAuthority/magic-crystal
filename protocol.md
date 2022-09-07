@@ -77,6 +77,11 @@ While Magic Wormhole still relies on an external communication channel (e.g. ema
 A further advantage of Magic Wormhole is that it is **identity-less**, meaning that the participants do not need to supply personal information or obtain access credentials to complete the transfer.
 Dark Crystal relies on the Owner and the Custodians using a PKI of their choice, which means that public/private keys are assigned to (partially) identified individuals.
 
+Magic Wormhole relies on low-entropy, human-memorable codes to perform a PAKE (Password Authenticated Key Exchange).
+These are made secure because only one guess may be used per code; if that one guess is an attacker, then the legitimate users know that code is destroyed.
+A "brute force" attack thus involves convincing two humans to relay dozens or thousands of codes.
+This isn't a full security argument; please see the Magic Wormhole documentation for more.
+
 The basic premise of Dark Crystal is that the secret owner trusts their Custodians, presumably implying that they know at least some aspects of their identity, so being identifiable by the public/private keys might not be much of a disadvantage.
 That said, one advantage of using Magic Wormhole is that the parties do not need to disclose any identifiable information to any other parties.
 
@@ -158,12 +163,14 @@ A session is completed when all Custodians have received their Shard.
 
 Shards are produced as per the Dark Crystal specification.
 In brief, this means:
-    - 256 Shards are produced
-    - each has a 1-byte ID
-    - each contains the symmetric-encrypted Application Data [*]
-    - each contains a Shamir Secret Sharing portion of the key for the above
-    - if we have fewer than 256 Custodians Shards are randomly selected
-Each Shard is stored locally associated with one of the petnames for this session.
+- 256 Shards are produced
+- each has a 1-byte ID
+- each contains the symmetric-encrypted Application Data [*]
+- each contains a Shamir Secret Sharing portion of the key for the above
+- if we have fewer than 256 Custodians then Shards are randomly selected
+Each Shard is stored locally and associated with one of the petnames for this session.
+
+[*] Note that _this_ symmetric-encryption is different from any application encryption choices and is part of the Shamir Secret Sharing method (which only encrypts up to 64 bytes in the Dark Crystal specification)
 
 This completes the setup phase of the "backup session".
 Next, the user is offerent the opportunity to send any outstanding Shard to the corresponding Custodian.
