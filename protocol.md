@@ -22,7 +22,7 @@ Motivation
 Many applications have some important data,
 such as private keys or cloud access credentials, that need to be kept secure and safe: such data should not be accessible to third parties, but it should be accessible to the user when needed, as it is **required** to recover access to the service in question.
 
-[Dark Crystal](https://darkcrystal.pw/) provides a way to back up such data using social connections: the data is split into several pieces (called "Shards") and distributed among trusted peers (called "Custodians").
+[Dark Crystal](https://darkcrystal.pw/) provides a way to back up such data using social connections: the data is split into several pieces (called "Shards") and distributed among trusted peers (called "Custodians"). This is achieved using a scheme essentially based on [Shamir's Secret Sharing](http://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf).
 
 Dark Crystal is **transport agnostic**, meaning that in can be used in combination with any transfer/communication mechanisms.
 In addition, using Dark Crystal requires a public-key infrastructure (PKI) of the users' choice.
