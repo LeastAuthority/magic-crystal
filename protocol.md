@@ -57,7 +57,7 @@ It also means there's no "passphrase" or so to remember for the user; they reall
 Encrypting files and messages provides a high level of protection from data being compromised.
 However, many people forego using encryption because they are worried that losing their encryption keys will result in them losing access to their data.
 
-Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into Shards and then distribute these shards to a set of their trusted peers (Custodians). 
+Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into Shards and then distribute these shards to a set of their trusted peers (Custodians).
 It is not possible to reconstruct the original secret from a single Shard, so the secret remains protected if a Shard is compromised.
 On the other hand, a subset of Shards is enough to recover the original secret, so the owner's access to the secret is preserved even if a shard is lost.
 
