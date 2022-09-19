@@ -68,6 +68,7 @@ Now, given a new computer and a fresh instance of the application, they can cont
 Note that, in the interests of simplicity, we choose **not** to encrypt the secret data, so a sufficiently large subset of Custodians can conspire to restore access.
 This feature can be useful for example in [estate planning](https://darkcrystal.pw/use-cases/#inheritance).
 It also means there's no "passphrase" or similar for the user to remember; the **only** thing they need do is to re-contact some number of the Custodians.
+Another use-case for such a feature is continuity for e.g. human-rights organizations (HROs) with sensitive information that should be recoverable only when a certain number of members agree.
 
 
 ### Why Dark Crystal?<a name="why-dc"></a>
@@ -187,7 +188,7 @@ In brief, this means:
 - each has a 1-byte ID
 - each contains the symmetric-encrypted Application Data [*]
 - each contains a Shamir Secret Sharing portion of the key for the above
-- if we have fewer than 256 Custodians then, Shards are randomly selected.
+- if we have fewer than 256 Custodians then Shards are randomly selected.
 Each Shard is stored locally and associated with one of the petnames for this session.
 
 [*] Note that **this** symmetric-encryption is different from any application encryption choices and is part of the Shamir Secret Sharing method (which only encrypts up to 64 bytes in the Dark Crystal specification)
@@ -204,7 +205,7 @@ They could distribute all Shards during one invocation of the GUI, but it is mor
 
 It is important for the user to understand that it is up to them to establish the authenticity of the Custodian.
 They must be sure that the wormhole code is given to the correct human and **only** to them.
-Since computers are generally unreliable, it may sometimes take more than one attempt, but "lots" of attempts could indicate an attacker (see [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) documentation for more).
+Since computers are generally unreliable, it may sometimes take more than one attempt but "lots" of attempts could indicate an attacker (see [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html) documentation for more).
 
 For every Custodian:
 
@@ -216,7 +217,7 @@ We establish this magic-wormhole file-transfer session in "send" mode.
 
 The Shard for this Custodian is offered as filename ``<purpose>.shard`` where "purpose" is the freeform string stored with this backup session.
 
-The Custodian accepts the Shard and stores it locally under an associated petname (this is a **different** pentame from the sender, as it is only seen by the Custodian).
+The Custodian accepts the Shard and stores it locally under an associated petname (this is a **different** pentame from the sender as it is only seen by the Custodian).
 Once the Custodian accepts the file and it is successfully transferred, the local copy of the Shard is deleted.
 This marks that petname as complete.
 If the transfer fails for any reason, the local Shard copy is retained.
@@ -270,8 +271,8 @@ It also opens up a prospective secret-holder to social attacks.
 For instance, if an attacker might successfully impersonates a "threshold" number of friends of a secret-holder, then they can recover that secret.
 Similarly, if an attacker can successfully convince enough Custodians that they are the secret holder, then they again may recover the secret.
 
-Users must use caution when sending out Shards: the software must explain the importance of this action, in particular, the importance of being sure of the recipient of it.
-That is, when the Magic Wormhole is being set up, users must take the time to correctly identify whom they are giving the code to.
+Users must use caution when sending out Shards: the software must explain the importance of this action; in particular the importance of being sure who the recipient is.
+That is, when the Magic Wormhole is being set up, users must take the time to correctly identify to whom they are giving the code.
 One code should only be given to one other person.
 Users should also be warned that each re-try is another opportunity for an attacker to guess a code (that is, having to retry many times in a row is unlikely and may indicate an attack).
 
