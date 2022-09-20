@@ -149,7 +149,7 @@ We do not specify that currently, although it should be straightforward to add.
 
 By operating without identities, our protocol needs to only communicate a single chunk of data (the Shard) from the person doing the backup to the Custodian.
 This mirrors the existing Magic Wormhole file-transfer application (which can do a single transfer in one direction).
-One major benefits of re-using this protocol is it becomes hard(er) to distinguish a Magic Wormhole connection that is being used for social secret backup from any other file-transfer.
+One major benefit of re-using this protocol is it becomes hard(er) to distinguish a Magic Wormhole connection that is being used for social secret backup from any other file-transfer.
 Another benefit is existing implementations (in several programming languages).
 
 The social backup protocol is to produce some number of Shards and then distribute them.
