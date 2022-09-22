@@ -40,41 +40,41 @@ such as private keys or cloud access credentials, that need to be kept secure an
 
 [Dark Crystal](https://darkcrystal.pw/) provides a way to back up such data using social connections: the data is split into several pieces (called "Shards") and distributed among trusted peers (called "Custodians"). This is achieved using a scheme essentially based on [Shamir's Secret Sharing](http://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf).
 
-Dark Crystal is **transport agnostic**, meaning that in can be used in combination with any transfer/communication mechanisms.
+Dark Crystal is **transport agnostic**, meaning that it can be used in combination with any transfer/communication mechanisms.
 In addition, using Dark Crystal requires a public-key infrastructure (PKI) of the users' choice.
 
 
-The transfer mechanism used in this document is [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html), a tool for connecting two computers on the Internet via human-transribed one-time codes.
+The transfer mechanism used in this document is [Magic Wormhole](https://magic-wormhole.readthedocs.io/en/latest/welcome.html), a tool for connecting two computers on the Internet via human-transcribed one-time codes.
 Magic Wormhole relies on the assumption that the two humans in charge of the two computers can communicate with each other either in person, on the phone, or via some messaging service (that is, via some "reasonably secure" channel).
 
 We describe a generic application that can backup and restore arbitrary secret data.
-That said, it should have certain charateristics for this to be most useful.
-The data should:
+That said, it should have certain characteristics for this to be most useful.
+The data should be:
 
-- be "one-time" (or rarely) produced;
-- be "relatively small" (see [Discussion](#discussion));
-- be self-contained;
+- "one-time" (or rarely) produced;
+- "relatively small" (see [Discussion](#discussion));
+- self-contained;
 
 Some examples of this:
 
 - the seed / private key of a cryptocurrency wallet;
 - credentials and access information for a cloud service (e.g. backup);
 - confidential/sensitive information
-- information identifying members of Human Rights Organizations in authoritarian countries
+- information identifying members of human rights organizations (HRO's) in authoritarian countries
 
-The main idea is that the user doing the backup has either lost access to their computer (e.g. it fell into the ocean), or the need to delete the - the data from their own hardware in cases when it could be seized by hostile parties (e.g. authoritarian governments, police raids, border crossing).
+The main idea is that the user doing the backup has either lost access to their computer (e.g. it fell into the ocean), or the need to delete the data from their own hardware in cases when it could be seized by hostile parties (e.g. authoritarian governments, police raids, border crossing).
 
 Now, given a new computer and a fresh instance of the application, they can contact some subset of the Custodians keeping Shards and thereby restore access.
 Note that, in the interests of simplicity, we choose **not** to encrypt the secret data, so a sufficiently large subset of Custodians can conspire to restore access.
 This feature can be useful for example in [estate planning](https://darkcrystal.pw/use-cases/#inheritance).
 It also means there's no "passphrase" or similar for the user to remember; the **only** thing they need do is to re-contact some number of the Custodians.
-Another use-case for such a feature is continuity for e.g. human-rights organizations (HROs) with sensitive information that should be recoverable only when a certain number of members agree.
+Another use-case for such a feature is continuity for e.g. HRO's with sensitive information that should be recoverable only when a certain number of members agree.
 
 
 ### Why Dark Crystal?<a name="why-dc"></a>
 
 Encrypting files and messages provides a high level of protection from data being compromised.
-However, many people forego using encryption because they are worried that losing their encryption keys will result in them losing access to their data.
+However, many people forgo using encryption because they are worried that losing their encryption keys will result in them losing access to their data.
 
 Dark Crystal aims to solve this problem by providing a set of protocols that enable users to split their data into Shards and then distribute these shards to a set of their trusted peers (Custodians).
 It is not possible to reconstruct the original secret from a single Shard, so the secret remains protected if a Shard is compromised.
@@ -131,7 +131,7 @@ The Dark Crystal threat model includes some "Considerations for message transpor
 
 Magic Wormhole provides robust encryption via SecretBox with an ephemeral secret key.
 
-Indistinguishability of messages is a little more difficult to reason about.
+The indistinguishability of messages is a little more difficult to reason about.
 By using the existing file-transfer protocol, Magic Wormhole sessions that transmit Shard data will look very similar to sessions that transmit other files.
 It may still be possibly to distinguish based on file-size -- for example, if the secret data has a characteristic size.
 Such a distinguisher will of course still have a margin of guessing: a file or text-message could also be the size of a Shard.
@@ -163,7 +163,7 @@ Choosing to not encrypt the data has advantages:
 
 - a sufficient number of Custodians can do disaster recovery;
 - the secret owner has nothing additional to "back up" (e.g. remember a passphrase)
-No matter the choice, our application will accept backup data as-is and anyone with a "threshold" number of Shards can reconstruct that data.
+No matter the choice, our application will accept backup data as is and anyone with a "threshold" number of Shards can reconstruct that data.
 
 For every backup, we start a "backup session".
 Every backup session has a "purpose", which is a freeform string provided by the user.
@@ -173,11 +173,11 @@ Backup sessions persist across many invocations of the GUI.
 Once a "purpose" is set and persistent storage arranged the user gives us the "application data".
 We do not encrypt it (it should be encrypted by the application or user first if they want that).
 
-Next, we collect a list of "petnames" for the Custodians.
-A "petname" is a local-only, user-defined string describing that Custodian.
+Next, we collect a list of "pet names" for the Custodians.
+A "pet name" is a local-only, user-defined string describing that Custodian.
 They have no meaning to any other user and should be considered sensitive information.
-Given the list of "petnames" we know how many Shards to produce.
-We also record a "threshold" which is the number of Shards required to re-build the Application Data.
+Given the list of "pet names" we know how many Shards to produce.
+We also record a "threshold" which is the number of Shards required to rebuild the Application Data.
 A session is completed when all Custodians have received their Shard.
 (Another way to say that is that there are no more Shards left locally).
 
@@ -189,7 +189,7 @@ In brief, this means:
 - each contains the symmetric-encrypted Application Data [*]
 - each contains a Shamir Secret Sharing portion of the key for the above
 - if we have fewer than 256 Custodians then Shards are randomly selected.
-Each Shard is stored locally and associated with one of the petnames for this session.
+Each Shard is stored locally and associated with one of the pet names for this session.
 
 [*] Note that **this** symmetric-encryption is different from any application encryption choices and is part of the Shamir Secret Sharing method (which only encrypts up to 64 bytes in the Dark Crystal specification)
 
@@ -200,7 +200,7 @@ Although a custom protocol could be defined, we instead use the existing file-tr
 Using this existing protocol makes it harder to distinguish a "Shard-sharing event" from any other file sharing.
 The Magic Wormhole file-transfer protocol allows a single transfer in a single direction.
 
-The next "distribution" phase is iterative: the user follows the procedure below for every petname in this session.
+The next "distribution" phase is iterative: the user follows the procedure below for every pet name in this session.
 They could distribute all Shards during one invocation of the GUI, but it is more likely to take several invocations at different times.
 
 It is important for the user to understand that it is up to them to establish the authenticity of the Custodian.
@@ -210,16 +210,16 @@ Since computers are generally unreliable, it may sometimes take more than one at
 For every Custodian:
 
 First, begin a magic-wormhole attempt – this generates a code (a small number followed by two words).
-Establish an out-of-band connection to the human who will be the Custodian for this petname.
-This channel might be a phone-call, in-person meeting, Signal message, etc
+Establish an out-of-band connection to the human who will be the Custodian for this pet name.
+This channel might be a phone-call, in-person meeting, Signal message, etc.
 Give the other human the wormhole code, which should establish the connection.
 We establish this magic-wormhole file-transfer session in "send" mode.
 
 The Shard for this Custodian is offered as filename ``<purpose>.shard`` where "purpose" is the freeform string stored with this backup session.
 
-The Custodian accepts the Shard and stores it locally under an associated petname (this is a **different** pentame from the sender as it is only seen by the Custodian).
+The Custodian accepts the Shard and stores it locally under an associated pet name (this is a **different** pentame from the sender as it is only seen by the Custodian).
 Once the Custodian accepts the file and it is successfully transferred, the local copy of the Shard is deleted.
-This marks that petname as complete.
+This marks that pet name as complete.
 If the transfer fails for any reason, the local Shard copy is retained.
 
 The above process repeats for each Custodian.
@@ -230,9 +230,9 @@ If this is the last local Shard, then the backup session is deemed as completed.
 
 For every recovery, we start a "recovery session".
 Every recovery session has a "purpose", which is a freeform string provided by the user – it should match the purpose from a previous "backup session".
-(Although the software should remember this for its users when possible, it's also possible the user is starting from nothing on a brand-new computers so freeform input should be allowed).
+(Although the software should remember this for its users when possible, it's also possible the user is starting from nothing on a brand-new computer so freeform input should be allowed).
 Similarly to backups, recovery sessions may persist longer than one GUI invocation.
-A list of "petnames" of expected Custodians is provided.
+A list of "pet names" of expected Custodians is provided.
 If it is not already known, the human must specify the "threshold" which is the number of Shards required to recover the Application Data.
 
 This sets up the recovery session and we now enter an iterative "collection" phase.
@@ -240,14 +240,14 @@ We remain in this phase until a "threshold" number of Shards are returned.
 
 One round of the collection phase consists of:
 
-Select a petname corresponding to an uncollected Shard.
+Selecting a pet name corresponding to an uncollected Shard.
 Establish a magic-wormhole file-transfer connection to this shard in "receive" mode (see the "backup" section for more details).
 On the Custodian side – which is the "send" side – the user must  the "purpose"; this should be prompted to them via the same out-of-band channel used to communicate the wormhole code.
-The Custodian also selects the correct petname for this user (in case, for example, they have multiple different Shards for one "purpose").
-If the Custodian has the correct Shard (i.e. they previously received one for this "purpose" and saved it under the same petname selected this time) they offer as ``<purpose>.shard`` in the file-transfer.
+The Custodian also selects the correct pet name for this user (in case, for example, they have multiple different Shards for one "purpose").
+If the Custodian has the correct Shard (i.e. they previously received one for this "purpose" and saved it under the same pet name selected this time) they offer as ``<purpose>.shard`` in the file-transfer.
 Once the transfer is completed successfully the Custodian **could** delete the Shard (we leave this as an upon UX question).
 
-On the "recovery" side, this Shard is recorded alongside the local petname.
+On the "recovery" side, this Shard is recorded alongside the local pet name.
 
 Once a "threshold" number of Shards are collected, the collection phase ends.
 
@@ -268,13 +268,13 @@ In any case, much of the protocol depends on the correct identification of the o
 This replaces the functionality that Public Key Infrastructure often provides.
 
 It also opens up a prospective secret-holder to social attacks.
-For instance, if an attacker might successfully impersonates a "threshold" number of friends of a secret-holder, then they can recover that secret.
+For instance, if an attacker might successfully impersonate a "threshold" number of friends of a secret-holder, then they can recover that secret.
 Similarly, if an attacker can successfully convince enough Custodians that they are the secret holder, then they again may recover the secret.
 
 Users must use caution when sending out Shards: the software must explain the importance of this action; in particular the importance of being sure who the recipient is.
 That is, when the Magic Wormhole is being set up, users must take the time to correctly identify to whom they are giving the code.
 One code should only be given to one other person.
-Users should also be warned that each re-try is another opportunity for an attacker to guess a code (that is, having to retry many times in a row is unlikely and may indicate an attack).
+Users should also be warned that each retry is another opportunity for an attacker to guess a code (that is, having to retry many times in a row is unlikely and may indicate an attack).
 
 
 Example with Existing Tools<a name="example-existing-tools"></a>
@@ -286,15 +286,15 @@ There are existing Magic Wormhole file-transfer tools including the reference Py
 The above protocol can be approximated with these tools by using some conventions.
 
 The state of all backups is represented by a local directory (for example, ``~/magic-crystal-backups``).
-A "backup session" is represented as a directory inside that named after the "purpose" for the session.
+A "backup session" is represented as a directory inside that is named after the "purpose" for the session.
 For example, ``~/magic-crystal-backups/privatestorage-recovery-key``.
 
 The ``dark-crystal-wormhole`` tool is then used inside this directory to make all the Shards required.
-For example, to create five Shards where any three can re-construct the secret: ``cargo run -- share --secret "password-manager root password" --n 5 --threshold 3``
-To enumberate the petnames, each Shard file is re-named to ``<petname>.shard``.
+For example, to create five Shards where any three can reconstruct the secret: ``cargo run -- share --secret "password-manager root password" --n 5 --threshold 3``
+To enumerate the pet names, each Shard file is renamed to ``<petname>.shard``.
 
 The "distribute" phase is then entered.
-Each iteration involves using ``wormhole send --file <petname>.shard`` for each remaining petname.
+Each iteration involves using ``wormhole send --file <petname>.shard`` for each remaining pet name.
 Every successfully-transferred Shard file is then deleted.
 
 
@@ -302,10 +302,10 @@ A recovery session is similarly represented as a local directory named after the
 
 For each Custodian, establish a "receive" file-transfer session: ``wormhole receive --code-words 2`` (note, this won't work until https://github.com/magic-wormhole/magic-wormhole/issues/450 is fixed).
 In the out-of-band session used to communicate the code-word, also communicate the "purpose".
-The Custodian then visits the right directly, and determines if there is a file for this human (i.e. their petname).
+The Custodian then visits the right directly, and determines if there is a file for this human (i.e. their pet name).
 If so, they send it ``wormhole send --code <whatever the receiver said> --file <petname>.shard``
-(Note: this leaks their local petname; they should first rename to ``<purpose>.shard``)
-The receiver re-names whatever they got to ``<petname>.shard` with their petname for the Custodian.
+(Note: this leaks their local pet name; they should first rename to ``<purpose>.shard``)
+The receiver re-names whatever they got to ``<petname>.shard` with their pet name for the Custodian.
 
 Once there are enough shards, they can be decrypted with the Dark Crystal tool ``cargo run -- combine``.
 
@@ -316,7 +316,7 @@ Discussion<a name="discussion"></a>
 ### Secret size<a name="secret-size"></a>
 
 We do not define exactly what a "reasonably sized" secret is.
-Instead, we dicuss some considerations to bear in mind when designing secret data to back up.
+Instead, we discuss some considerations to bear in mind when designing secret data to back up.
 The size of the secret is X bytes; the number of Custodians is N.
 
 - final secrets include some fixed-sized additional data, but X itself dominates after "hundreds of bytes"
@@ -337,7 +337,7 @@ One of these is on the "recovery" side and one is on the Custodian side.
 It may make sense to ask the user.
 
 They have done the hard work of completing a transfer which might indicate keeping Shards.
-Shards also represent a risk: **anyone** who collects enough of them can re-construct the Application Data.
+Shards also represent a risk: **anyone** who collects enough of them can reconstruct the Application Data.
 So, both sides can have an interest in deleting the Shard data.
 
 For example, a Custodian may simply ask the backup side which is best (delete, or continue to retain the Shard).
